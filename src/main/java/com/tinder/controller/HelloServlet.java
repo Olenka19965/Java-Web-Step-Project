@@ -1,3 +1,5 @@
+package com.tinder.controller;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,7 +15,7 @@ public class HelloServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest rq, HttpServletResponse rs) throws ServletException, IOException {
-rs.setContentType("text/plain");
-rs.getWriter().write(message);
+        rs.setContentType("text/plain");
+        rs.getWriter().write(message);
     }
 }
