@@ -3,8 +3,10 @@ package com.tinder;
 import com.tinder.controller.HelloServlet;
 import com.tinder.controller.MessageServlet;
 import com.tinder.controller.TemplateEngine;
+import com.tinder.controller.UserListServlet;
 import com.tinder.dao.message.MessageDao;
 import com.tinder.dao.message.MessageSqlDao;
+import com.tinder.dao.model.SqlUserProfileDao;
 import com.tinder.service.MessageService;
 import com.tinder.utils.DbUtil;
 import org.eclipse.jetty.server.Server;
@@ -22,11 +24,11 @@ public class WebServer {
             Server server = new Server(8080);
 
             TemplateEngine te = new TemplateEngine();
-
+            SqlUserProfileDao userDao = new SqlUserProfileDao();
             ServletContextHandler handler = new ServletContextHandler();
 
             handler.addServlet(new ServletHolder(new HelloServlet("Hello world")), "/users");
-
+            handler.addServlet(new ServletHolder(new UserListServlet(te,userDao)), "/userlist");
             MessageDao md = new MessageSqlDao(conn);
             MessageService ms = new MessageService(md);
             handler.addServlet(new ServletHolder(new MessageServlet(te, ms)), "/messages/*");
