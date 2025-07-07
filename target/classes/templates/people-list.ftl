@@ -14,11 +14,16 @@
             <tr>
                 <td><img src="${user.photo}" alt="Avatar" style="width:50px; border-radius:50%;"></td>
                 <td>${user.name}</td>
-                <td>
-                    <form method="post" action="/users">
+                <td class="d-flex gap-3">
+                    <form method="post" action="/userlist">
                         <input type="hidden" name="userId" value="${user.id}">
-                        <button name="action" value="yes" class="btn btn-success btn-sm">Yes</button>
-                        <button name="action" value="no" class="btn btn-danger btn-sm">No</button>
+                        <input type="hidden" name="action" value="like">
+                        <button type="submit" class="btn btn-success btn-sm">Yes</button>
+                    </form>
+                    <form method="post" action="/userlist">
+                        <input type="hidden" name="userId" value="${user.id}">
+                        <input type="hidden" name="action" value="dislike">
+                        <button type="submit" class="btn btn-danger btn-sm">No</button>
                     </form>
                 </td>
             </tr>
