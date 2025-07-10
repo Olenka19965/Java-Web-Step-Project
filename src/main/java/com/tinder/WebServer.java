@@ -1,13 +1,12 @@
 package com.tinder;
 
-import com.tinder.controller.HelloServlet;
-import com.tinder.controller.MessageServlet;
-import com.tinder.controller.TemplateEngine;
-import com.tinder.controller.UserListServlet;
+import com.tinder.controller.*;
 import com.tinder.dao.message.MessageDao;
 import com.tinder.dao.message.MessageSqlDao;
+import com.tinder.dao.model.SqlUserLikeDao;
 import com.tinder.dao.model.SqlUserProfileDao;
-import com.tinder.service.MessageService;
+import com.tinder.dao.model.UserLikeDao;
+import com.tinder.service.*;
 import com.tinder.utils.DbUtil;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -25,14 +24,17 @@ public class WebServer {
 
             TemplateEngine te = new TemplateEngine();
             SqlUserProfileDao userDao = new SqlUserProfileDao();
+            UserProfileService userService = new UserProfileServiceImpl(userDao);
+            UserLikeDao likeDao = new SqlUserLikeDao(conn);
+            LikeService likeService = new LikeServiceImpl(likeDao);
             ServletContextHandler handler = new ServletContextHandler();
 
             handler.addServlet(new ServletHolder(new HelloServlet("Hello world")), "/users");
-            handler.addServlet(new ServletHolder(new UserListServlet(te,userDao)), "/userlist");
+            handler.addServlet(new ServletHolder(new UserListServlet(te,userService,likeService)), "/userlist");
             MessageDao md = new MessageSqlDao(conn);
             MessageService ms = new MessageService(md);
             handler.addServlet(new ServletHolder(new MessageServlet(te, ms)), "/messages/*");
-
+            handler.addServlet(new ServletHolder(new LikedServlet(te, userService, likeService)), "/liked");
             server.setHandler(handler);
             server.start();
             server.join();
