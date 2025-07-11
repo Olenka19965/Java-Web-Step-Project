@@ -1,6 +1,6 @@
 package com.tinder.controller;
 
-import com.tinder.dao.model.UserProfileDao;
+import com.tinder.dao.user.UserProfileDao;
 import com.tinder.exception.DaoException;
 import com.tinder.model.UserProfile;
 import jakarta.servlet.ServletException;
@@ -8,10 +8,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class UserListServlet extends HttpServlet {
     private final TemplateEngine te;
@@ -21,6 +18,7 @@ public class UserListServlet extends HttpServlet {
     public UserListServlet(TemplateEngine te, UserProfileDao userProfileDao) {
         this.te = te;
         this.userProfileDao = userProfileDao;
+//        this.userProfileService = userProfileService;
     }
 
     @Override
@@ -41,11 +39,18 @@ public class UserListServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String userIdStr = req.getParameter("userId");
         String action = req.getParameter("action");
+
+        Enumeration<String> paramNames = req.getParameterNames();
+        while (paramNames.hasMoreElements()) {
+            String param = paramNames.nextElement();
+            System.out.println(param + " = " + req.getParameter(param));
+        }
         if (userIdStr != null && action != null) {
             try {
                 int userId = Integer.parseInt(userIdStr);
                 try {
                     UserProfile user = userProfileDao.findById(userId);
+//                    UserProfile user = usersService.find(userId);
                     if (user != null) {
                         if ("yes".equalsIgnoreCase(action)) {
                             if (!likedUsers.contains(user)) {
@@ -59,6 +64,6 @@ public class UserListServlet extends HttpServlet {
             } catch (NumberFormatException ignored) {
             }
         }
-        resp.sendRedirect("/users");
+        resp.sendRedirect("/userlist");
     }
 }

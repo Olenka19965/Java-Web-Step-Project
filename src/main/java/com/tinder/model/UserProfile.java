@@ -1,6 +1,8 @@
 package com.tinder.model;
 
-public class UserProfile {
+import com.tinder.shared.Identifiable;
+
+public class UserProfile implements Identifiable {
     private int id;
     private String name;
     private String photo;
@@ -10,6 +12,7 @@ public class UserProfile {
         this.photo = photo;
         this.name = name;
     }
+    @Override
     public int getId() {
         return id;
     }
