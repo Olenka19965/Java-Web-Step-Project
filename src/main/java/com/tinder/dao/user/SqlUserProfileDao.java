@@ -1,4 +1,4 @@
-package com.tinder.dao.model;
+package com.tinder.dao.user;
 
 import com.tinder.exception.DaoException;
 import com.tinder.model.UserProfile;

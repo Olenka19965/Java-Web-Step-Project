@@ -7,7 +7,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 public record Message(
-        String id,
+        int id,
         String senderId,
         String senderName,
         String senderImg,
@@ -26,7 +26,7 @@ public record Message(
                 .format(FORMATTER);
     }
     @Override
-    public String getId() {
+    public int getId() {
         return id;
     }
 }
