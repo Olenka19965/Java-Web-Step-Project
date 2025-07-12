@@ -8,5 +8,5 @@ import java.util.List;
 public interface UserLikeDao {
     void setLikeStatus(int userId, int targetUserId, Boolean liked);
     Boolean getLikeStatus(int userId, int targetUserId);
-    List<UserProfile> getLikedProfiles(int userId) throws DaoException;
+    List<Integer> getLikedUserIds(int userId) throws DaoException;
 }

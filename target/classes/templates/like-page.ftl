@@ -1,18 +1,17 @@
 <!doctype html>
-<html lang="en">
+<html lang="uk">
 <head>
-    <meta charset="utf-8">
-    <title>Liked Profiles</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="icon" href="img/favicon.ico">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" crossorigin="anonymous">
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <title>Вподобані профілі</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css"
+          integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body style="background-color: #f5f5f5;">
-
 <div class="container mt-4">
-    <h2 class="text-center mb-4">Уподобані користувачі</h2>
+    <h2 class="text-center mb-4">Вподобані профілі</h2>
 
     <#if likedUsers?size == 0>
         <p class="text-center">Поки що немає вподобаних профілів.</p>
@@ -22,7 +21,7 @@
                 <div class="col-md-4 mb-4">
                     <div class="card">
                         <div class="card-body text-center">
-                            <img src="${user.avatarUrl}" class="rounded-circle img-fluid mb-2" alt="${user.name}" width="150">
+                            <img src="${user.photo}" class="rounded-circle img-fluid mb-2" alt="${user.name}" width="150">
                             <h5 class="mb-3">${user.name}</h5>
 
                             <a href="/messages/${user.id}" class="btn btn-primary btn-sm mb-2">
@@ -65,6 +64,5 @@
         </div>
     </#if>
 </div>
-
 </body>
 </html>

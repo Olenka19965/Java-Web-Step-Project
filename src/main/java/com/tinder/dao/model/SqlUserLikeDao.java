@@ -16,8 +16,9 @@ public class SqlUserLikeDao implements UserLikeDao {
     public SqlUserLikeDao(Connection conn) {
         this.conn = conn;
     }
+
     @Override
-    public void setLikeStatus(int userId, int targetUserId, Boolean liked) {
+    public void setLikeStatus(int userId, int targetUserId, Boolean liked) throws DaoException {
         String sql = """
             INSERT INTO user_likes (user_id, target_user_id, liked)
             VALUES (?, ?, ?)
@@ -27,14 +28,32 @@ public class SqlUserLikeDao implements UserLikeDao {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setInt(2, targetUserId);
-            ps.setBoolean(3, liked);
+            if (liked == null) {
+                // Якщо потрібно видалити лайк (null), можна видалити запис
+                removeLike(userId, targetUserId);
+                return;
+            } else {
+                ps.setBoolean(3, liked);
+            }
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DaoException("Помилка при встановленні статусу лайку", e);
         }
     }
+
+    private void removeLike(int userId, int targetUserId) throws DaoException {
+        String sql = "DELETE FROM user_likes WHERE user_id = ? AND target_user_id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setInt(2, targetUserId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DaoException("Помилка при видаленні лайку", e);
+        }
+    }
+
     @Override
-    public Boolean getLikeStatus(int userId, int targetUserId) {
+    public Boolean getLikeStatus(int userId, int targetUserId) throws DaoException {
         String sql = "SELECT liked FROM user_likes WHERE user_id = ? AND target_user_id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
@@ -45,35 +64,25 @@ public class SqlUserLikeDao implements UserLikeDao {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DaoException("Помилка при отриманні статусу лайку", e);
         }
         return null;
     }
 
     @Override
-    public List<UserProfile> getLikedProfiles(int userId) throws DaoException {
-        List<UserProfile> likedProfiles = new ArrayList<>();
-        String sql = """
-            SELECT u.id, u.name, u.photo_url
-            FROM users u
-            JOIN user_likes ul ON u.id = ul.target_user_id
-            WHERE ul.user_id = ? AND ul.liked = TRUE
-        """;
-
+    public List<Integer> getLikedUserIds(int userId) throws DaoException {
+        List<Integer> likedUserIds = new ArrayList<>();
+        String sql = "SELECT target_user_id FROM user_likes WHERE user_id = ? AND liked = TRUE";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    likedProfiles.add(new UserProfile(
-                            rs.getInt("id"),
-                            rs.getString("name"),
-                            rs.getString("photo_url")
-                    ));
+                    likedUserIds.add(rs.getInt("target_user_id"));
                 }
             }
         } catch (SQLException e) {
-            throw new DaoException("Помилка при отриманні лайкнутих профілів", e);
+            throw new DaoException("Помилка при отриманні лайкнутих користувачів", e);
         }
-        return likedProfiles;
+        return likedUserIds;
     }
 }

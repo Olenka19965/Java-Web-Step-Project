@@ -44,10 +44,24 @@ public class LikedServlet extends HttpServlet {
         String action = req.getParameter("action");
         String targetIdStr = req.getParameter("targetId");
 
-        if ("remove".equalsIgnoreCase(action) && targetIdStr != null) {
+        if (targetIdStr != null) {
             try {
                 int targetId = Integer.parseInt(targetIdStr);
-                likeService.setLikeStatus(userId, targetId, null);
+
+                switch (action.toLowerCase()) {
+                    case "like":
+                        likeService.setLikeStatus(userId, targetId, true);
+                        break;
+                    case "dislike":
+                        likeService.setLikeStatus(userId, targetId, false);
+                        break;
+                    case "remove":
+                        likeService.setLikeStatus(userId, targetId, null);
+                        break;
+                    default:
+                        System.out.println("Невідома дія: " + action);
+                }
+
             } catch (NumberFormatException | DaoException e) {
                 e.printStackTrace();
             }

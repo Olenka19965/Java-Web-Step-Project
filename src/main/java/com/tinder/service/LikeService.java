@@ -9,4 +9,6 @@ public interface LikeService {
     void setLikeStatus(int userId, int targetUserId, Boolean liked);
     Boolean getLikeStatus(int userId, int targetUserId);
     List<UserProfile> getLikedProfiles(int userId) throws DaoException;
+
+
 }

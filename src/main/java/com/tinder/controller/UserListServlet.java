@@ -5,6 +5,7 @@ import com.tinder.model.UserProfile;
 import com.tinder.service.LikeService;
 import com.tinder.service.UserProfileService;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,7 +30,7 @@ public class UserListServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Map<String, Object> data = new HashMap<>();
         try {
-            int loggedInUserId = 1; // потрібно буде змінити на реальний юзер айді з кукі
+            int loggedInUserId = 1; // замінити на справжній айді з кукі
             List<UserProfile> allProfiles = userProfileService.getAllProfiles();
             List<UserProfile> unvoted = new ArrayList<>();
 
@@ -37,7 +38,7 @@ public class UserListServlet extends HttpServlet {
                 if (profile.getId() == loggedInUserId) continue;
                 Boolean status = likeService.getLikeStatus(loggedInUserId, profile.getId());
                 if (status == null) {
-                    unvoted.add(profile); // тут показуємо тільки тих кого ще не лайкнули і не показуємо себе
+                    unvoted.add(profile);
                 }
             }
             data.put("users", unvoted);
@@ -47,6 +48,7 @@ public class UserListServlet extends HttpServlet {
         }
         te.render("people-list.ftl", data, resp);
     }
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String userIdStr = req.getParameter("userId");
@@ -55,10 +57,11 @@ public class UserListServlet extends HttpServlet {
         if (userIdStr != null && action != null) {
             try {
                 int targetUserId = Integer.parseInt(userIdStr);
-                int loggedInUserId = 1; // потрібно буде змінити на реальний юзер айді з кукі
+                int loggedInUserId = 1; // замінити на справжній айді з кукі
                 boolean liked = "yes".equalsIgnoreCase(action);
                 likeService.setLikeStatus(loggedInUserId, targetUserId, liked);
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) {
+            }
         }
         resp.sendRedirect("/userlist");
     }
