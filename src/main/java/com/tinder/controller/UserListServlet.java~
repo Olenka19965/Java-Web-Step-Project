@@ -30,46 +30,29 @@ public class UserListServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Map<String, Object> data = new HashMap<>();
-        HttpSession session = req.getSession();
-
         try {
-            User currentUser = (User) session.getAttribute("user");
+            User currentUser = (User) req.getSession().getAttribute("user");
             if (currentUser == null) {
                 resp.sendRedirect("/login");
                 return;
             }
 
+            int loggedInUserId = currentUser.getId();
             List<User> allProfiles = userProfileService.getAllProfiles();
-            List<User> availableProfiles = new ArrayList<>();
 
-            // Видаляємо себе зі списку
-            for (User u : allProfiles) {
-                if (u.getId() != currentUser.getId()) {
-                    availableProfiles.add(u);
-                }
+            User nextUserToShow = null;
+            for (User profile : allProfiles) {
+                if (profile.getId() == loggedInUserId) continue;
+                // показуємо навіть якщо вже є статус → нескінченний цикл
+                nextUserToShow = profile;
+                break;
             }
 
-            // Якщо немає інших користувачів
-            if (availableProfiles.isEmpty()) {
-                data.put("user", null);
-                te.render("people-list.ftl", data, resp);
-                return;
+            if (nextUserToShow != null) {
+                data.put("user", nextUserToShow);
+            } else {
+                data.put("user", null); // На випадок якщо профілів нема взагалі
             }
-
-            // Отримуємо поточний індекс з сесії
-            Integer index = (Integer) session.getAttribute("userIndex");
-            if (index == null) {
-                index = 0;
-            }
-
-            // Гарантуємо, що індекс не вийде за межі
-            if (index >= availableProfiles.size()) {
-                index = 0;
-            }
-
-            User nextUser = availableProfiles.get(index);
-            data.put("user", nextUser);
-            session.setAttribute("userIndex", index); // Зберігаємо індекс, щоб POST знав кого було показано
 
         } catch (DaoException e) {
             e.printStackTrace();
@@ -81,32 +64,26 @@ public class UserListServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        HttpSession session = req.getSession();
-        User currentUser = (User) session.getAttribute("user");
+        String userIdStr = req.getParameter("userId");
+        String action = req.getParameter("action");
+
+        User currentUser = (User) req.getSession().getAttribute("user");
         if (currentUser == null) {
             resp.sendRedirect("/login");
             return;
         }
 
-        String userIdStr = req.getParameter("userId");
-        String action = req.getParameter("action");
-
         if (userIdStr != null && action != null) {
             try {
                 int targetUserId = Integer.parseInt(userIdStr);
+                int loggedInUserId = currentUser.getId();
                 boolean liked = "yes".equalsIgnoreCase(action);
-                likeService.setLikeStatus(currentUser.getId(), targetUserId, liked);
-            } catch (NumberFormatException ignored) {}
+                likeService.setLikeStatus(loggedInUserId, targetUserId, liked);
+            } catch (NumberFormatException ignored) {
+            }
         }
 
-        // Збільшуємо індекс перегляду
-        Integer index = (Integer) session.getAttribute("userIndex");
-        if (index == null) {
-            index = 0;
-        }
-        session.setAttribute("userIndex", index + 1);
-
-        // Перенаправляємо назад
         resp.sendRedirect("/users");
     }
+
 }
