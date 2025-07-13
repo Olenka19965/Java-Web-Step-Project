@@ -15,7 +15,7 @@
                 <td><img src="${user.photo}" alt="Avatar" style="width:50px; border-radius:50%;"></td>
                 <td>${user.name}</td>
                 <td>
-                    <form method="post" action="/userlist">
+                    <form method="post" action="/users">
                         <input type="hidden" name="userId" value="${user.id}">
                         <button name="action" value="yes" class="btn btn-success btn-sm">Yes</button>
                         <button name="action" value="no" class="btn btn-danger btn-sm">No</button>

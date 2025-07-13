@@ -1,11 +1,10 @@
 package com.tinder.controller;
 
 import com.tinder.exception.DaoException;
-import com.tinder.model.UserProfile;
-import com.tinder.service.LikeService;
-import com.tinder.service.UserProfileService;
+import com.tinder.model.User;
+import com.tinder.service.like.LikeService;
+import com.tinder.service.user.UserService;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,10 +15,10 @@ import java.util.Map;
 
 public class LikedServlet extends HttpServlet {
     private final TemplateEngine te;
-    private final UserProfileService userProfileService;
+    private final UserService userProfileService;
     private final LikeService likeService;
 
-    public LikedServlet(TemplateEngine te, UserProfileService userProfileService, LikeService likeService) {
+    public LikedServlet(TemplateEngine te, UserService userProfileService, LikeService likeService) {
         this.te = te;
         this.userProfileService = userProfileService;
         this.likeService = likeService;
@@ -30,7 +29,7 @@ public class LikedServlet extends HttpServlet {
         Map<String, Object> data = new HashMap<>();
 
         try {
-            List<UserProfile> likedUsers = likeService.getLikedProfiles(userId);
+            List<User> likedUsers = likeService.getLikedProfiles(userId);
             data.put("likedUsers", likedUsers);
         } catch (DaoException e) {
             e.printStackTrace();
@@ -68,16 +67,13 @@ public class LikedServlet extends HttpServlet {
         }
         resp.sendRedirect("/liked");
     }
+
     private int getLoggedInUserId(HttpServletRequest req) {
-        if (req.getCookies() != null) {
-            for (Cookie cookie : req.getCookies()) {
-                if ("userId".equals(cookie.getName())) {
-                    try {
-                        return Integer.parseInt(cookie.getValue());
-                    } catch (NumberFormatException ignored) {}
-                }
-            }
+        User user = (User) req.getSession().getAttribute("user");
+        if (user != null) {
+            return user.getId();
         }
-        return 1;
+        // Можна редіректити або кидати виняток
+        throw new IllegalStateException("Користувач не автентифікований");
     }
 }
