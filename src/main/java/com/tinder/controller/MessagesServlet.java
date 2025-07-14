@@ -26,24 +26,50 @@ public class MessagesServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String pathInfo = req.getPathInfo(); // /1
-        if (pathInfo == null || pathInfo.equals("/")) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing receiver ID");
+        User currentUser = (User) req.getSession().getAttribute("user");
+
+        if (currentUser == null) {
+            resp.sendRedirect("/login");
             return;
         }
 
-        int sender = ((User) req.getSession().getAttribute("user")).getId();
-        int receiver = Integer.parseInt(pathInfo.substring(1));
+        String pathInfo = req.getPathInfo(); // /1
 
-        Map<String, Object> data = new HashMap<>();
+        if (pathInfo == null || pathInfo.equals("/")) {
+            // 👉 редірект на першого співрозмовника
+            try {
+                // отримаємо список останніх повідомлень (напр., унікальні receiverId)
+                List<Message> messages = ms.readSome(currentUser.getId(), -1, 0, 1); // або спеціальний метод "getLastConversations()"
+
+                if (!messages.isEmpty()) {
+                    int firstReceiverId = messages.get(0).receiverId();
+                    resp.sendRedirect("/messages/" + firstReceiverId);
+                } else {
+                    // немає листувань — перенаправляємо на /users або показуємо заглушку
+                    resp.sendRedirect("/liked");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            }
+            return;
+        }
+
         try {
-            User ou = us.getProfileById(receiver);
-            List<Message> ml = ms.readSome(sender, receiver, 0, 20);
-            data.put("receiver", ou);
-            data.put("messages", ml);
+            int receiverId = Integer.parseInt(pathInfo.substring(1));
+            User receiver = us.getProfileById(receiverId);
+            List<Message> messageList = ms.readSome(currentUser.getId(), receiverId, 0, 20);
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("receiver", receiver);
+            data.put("messages", messageList);
             te.render("chat.ftl", data, resp);
+
+        } catch (NumberFormatException e) {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid user ID");
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
 
