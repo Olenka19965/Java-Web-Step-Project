@@ -1,1 +1,0 @@
-INSERT INTO auth(user_id, login, password) VALUES (3, 'tanya@gmail.com', 'tanya1234');

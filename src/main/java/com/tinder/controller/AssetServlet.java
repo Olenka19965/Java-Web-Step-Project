@@ -4,39 +4,30 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 
 public class AssetServlet extends HttpServlet {
-    private final String basePath;
-
-    public AssetServlet(String basePath) {
-        this.basePath = basePath;
-    }
-
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String path = req.getPathInfo();
-        File file = new File(basePath, path);
-        if (!file.exists() || file.isDirectory()) {
+        String path = req.getPathInfo(); // напр. /style.css
+        if (path == null) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
-        // Визначення MIME типу
-        String mimeType = req.getServletContext().getMimeType(file.getName());
+        InputStream resource = getClass().getResourceAsStream("/assets" + path);
+        if (resource == null) {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        String mimeType = req.getServletContext().getMimeType(path);
         if (mimeType == null) {
             mimeType = "application/octet-stream";
         }
 
         resp.setContentType(mimeType);
-        resp.setContentLengthLong(file.length());
-        try (FileInputStream in = new FileInputStream(file);
-             OutputStream out = resp.getOutputStream()) {
-            in.transferTo(out);
-        }
+        resource.transferTo(resp.getOutputStream());
     }
 }
 

@@ -57,9 +57,10 @@ public class WebServer {
 
             ServletContextHandler handler = new ServletContextHandler();
 
-            handler.addServlet(new ServletHolder(new AssetServlet("src/main/webapp/assets")), "/assets/*");
+            handler.addServlet(new ServletHolder(new AssetServlet()), "/assets/*");
 
             handler.setSessionHandler(new SessionHandler());
+            handler.addServlet(new ServletHolder(new RedirectServlet()), "/");
             handler.addServlet(new ServletHolder(new LoginServlet(te, as, userService)), "/login");
             handler.addFilter(new FilterHolder(new LoginFilter(te, as, userService)), "/*", EnumSet.of(DispatcherType.REQUEST));
             handler.addServlet(new ServletHolder(new HelloServlet("Hello world")), "/hello");
